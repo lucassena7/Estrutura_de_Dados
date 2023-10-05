@@ -18,8 +18,8 @@ float calcDist(int x1,int y1, int x2, int y2) //Função calcula distância
   return sqrt(pow((x1-x2),2.0) +pow((y1-y2),2.0)); //Fórmula dada em sala de aula
 }
 
-float calcPerimetro(int linha[]) //Função calcula perímetro
-{
+float calcPerimetro(int linha[]) {//Função calcula perímetro
+
   //Declaração de variáveis
   float perim;
   float dAB=calcDist(linha[0],linha[1],linha[2],linha[3]); //calculando a distância entre A-B
@@ -40,7 +40,7 @@ void desenhaMoldura(void) //Função desenvolvida para 'exibir bonitinho'
   return;
 }
 
-void exibeResposta(char nome[], float perim, int matriz[][6])
+void exibeResposta(char nome[], float perim, int linha[])
 {
 	int i=0, j;
     // mostrar o perímetro calculado pelo programa
@@ -51,50 +51,93 @@ void exibeResposta(char nome[], float perim, int matriz[][6])
    	
   	for (j=0;j<6;j++)
     {
-    	printf("%d ", matriz[i][j]);
+    	printf("%d ", linha[j]);
 		}
 	
     desenhaMoldura();
     return;
 }
-
-void ordenar (float vetor[], char vetorStr[], int tamanho)
-{
-	//Declaração de variáveis
-	int aux , i, j,k;
+void troca(float vPerim[], char vNomes[][10], int mCoordenadas[][6], int i, int k){
+  int aux,j;
   char temp[10];
-	
-	for (i=1; i<=tamanho-1; i++) //Iniciando o 'for' na posição '1' e indo até o penúltimo elemento
-	{
-		aux = vetor[i]; //'aux' recebe o valor do vetor[i]
-		j = i-1; // 'j' recebe o valor de 'i' - 1
-    
-		while ((j >=0) && (vetor[j] > aux)) //Enquanto 'j' for >= 0 && valor percorrido por 'j' for > 'aux'
-		{
-			vetor[j+1] = vetor[j]; //o prox de 'j' recebe 'j'
-			vetor[j] = aux; //j recebe o valor de temp
+  float auxPerim;
+  auxPerim = vPerim[i];
+  vPerim[i]=vPerim[k];
+  vPerim[k]=auxPerim;
 
-         //Experimental
-         strcpy (temp, &vetorStr[i]); //Copiando a string da posição 'i' do vetor para 'temp'
-     	 	 strcpy (&vetorStr[j+1], &vetorStr[j]);
-     	 	 strcpy (&vetorStr[j],temp);
-      
-			j--; //reavaliando a posição
+  strcpy(temp, vNomes[i]);
+  strcpy(vNomes[i], vNomes[k]);
+  strcpy(vNomes[k],temp);
+
+  for (j=0;j<6;j++){
+      aux=mCoordenadas[i][j];
+      mCoordenadas[i][j]=mCoordenadas[k][j];
+      mCoordenadas[k][j] = aux;
+  }
+}
+int buscabinaria( float  vet[], int qt, float chv, int *pos){
+  int inic=0,fim=qt-1,achou=0;
+  int meio;
+  while (inic <=fim && !achou){
+    meio=(inic+fim)/2;
+    if (vet[meio]== chv){
+      achou = 1;
     }
-	}
+    else if (vet[meio] > chv)
+      fim=meio-1;
+    else
+      inic=meio+1;
+  }
+  if (achou == 1){
+    *pos=meio;
+    return 1;
+  }
+  else{
+    *pos=inic;
+    return 0;
+  }
+
+
+  
+}
+void ordenar (float vPerim[], char vNomes[][10], int mCoordenadas[][6],int tamanho){
+	//Declaração de variáveis
+	int aux , i, j,k,ultTroca;
+  char temp[10];
+  float auxPerim;
+	int fimDesordenado;
+	for(fimDesordenado=tamanho;fimDesordenado>0;fimDesordenado=ultTroca){
+     ultTroca= 0;
+		 for (i=0;i<fimDesordenado-1;i++) {
+       if (vPerim[i] > vPerim[i+1]){
+         ultTroca=i;
+         troca(vPerim,vNomes,mCoordenadas,i,i+1);
+      }
+       else if (vPerim[i] == vPerim[i+1])
+         if (strcmp(vNomes[i], vNomes[i+1])>0){
+
+
+
+           ultTroca=i;
+           troca(vPerim,vNomes,mCoordenadas,i,i+1);
+           }
+      }
+
+  }
 }
 
 int main(void) 
 {
   //Declaração de variáveis
-  int mCoordenadas[TAM][6]; //4 pessoas - 6 coordenadas
-  int temp;
-  char  vNomes[TAM][10]; //4 pessoas - máx 10 caracteres
-  char vNomesAux[10];
-  float vPerim[TAM], auxPerim;
-  int i,j,k;
+  int mCoordenadas[TAM][6]={{5,6,7,8,3,4},{4,5,7,6,8,9},{5,6,7,8,3,4},{4,5,7,6,8,9}}; //4 pessoas - 6 coordenadas
+  int i;
+  char  vNomes[TAM][10] = {"nana","kaka","lulu","juju"}; //4 pessoas - máx 10 caracteres
+ 
+  float vPerim[TAM];
+  
 
 //Obtendo os dados do usuário
+  /*
   for(i=0;i<TAM;i++) 
   {
     printf("\nNome da %dª pessoa?",i+1);
@@ -109,43 +152,25 @@ int main(void)
     //atribuindo o valor do perímetro da pessoa 'i' no v[Perim] 
     vPerim[i]=calcPerimetro(mCoordenadas[i]);
   }
-
-  printf("Antes da ordenacao:");
+ */
+  // usando os dados atribuídos
+  for(i=0;i<TAM;i++){
+    vPerim[i]=calcPerimetro(mCoordenadas[i]);
+  }
+  
+  printf("\n\n\nAntes da ordenacao:");
   for (i=0;i<TAM;i++)
 	{
-		exibeResposta(vNomes[i], vPerim[i], &mCoordenadas[i]); 
+		exibeResposta(vNomes[i], vPerim[i], mCoordenadas[i]); 
 	}
   
   // organizar os vetores/matriz em ordem de perímetro
-  // exibir os vetores
-  for (i = 0; i < TAM; i++) //Iniciando 'i' na primeira posição
-  {
-    for (j = i+1; j < TAM; j++) //Iniciando 'j' na '2' posição
-    {
-      if (vPerim[i] > vPerim[j]) //Se o valor que está armazenado em 'i' for > que o armazenado em 'j'
-      {
-        auxPerim = vPerim[i];  //Armazenando o valor que está armazenado em 'i' no auxPerim
-        vPerim[i] = vPerim[j]; //o valor que está armazenado em 'i' recebe o valor armazenado em 'j'
-        vPerim[j] = auxPerim; //Armazenando o valor que está armazenado em 'auxPerim' em 'j'
-        
-        strcpy (vNomesAux, vNomes[i]);
-        strcpy (vNomes[i], vNomes[j]);
-        strcpy (vNomes[j], vNomesAux);
-        
-				for (k=0;k<6;k++)  //Percorrendo as colunas da matriz
-				{
-					temp =mCoordenadas[i][k]; //armazenando a a coordenada na variável 'temp'
-					mCoordenadas[i][k] = mCoordenadas[j][k]; //Ordenando as coordenadas da matriz
-					mCoordenadas[j][k] = temp; //Ordenando as coordenadas da matriz
-				}	 
-			}
-    }
-  }
+  ordenar(vPerim,vNomes,mCoordenadas,TAM);
   
-  printf("\n\nDepois da ordenacao:");
+  printf("\n\n\n\n\Depois da ordenacao:");
   for (i=0;i<TAM;i++)
 	{
-		exibeResposta(vNomes[i], vPerim[i], &mCoordenadas[i]); 
+		exibeResposta(vNomes[i], vPerim[i], mCoordenadas[i]); 
 	}
   return 0;
 }
